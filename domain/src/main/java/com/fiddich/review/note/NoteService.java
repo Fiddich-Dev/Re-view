@@ -1,5 +1,6 @@
 package com.fiddich.review.note;
 
+import com.fiddich.review.common.exception.BusinessException;
 import com.fiddich.review.user.User;
 import com.fiddich.review.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -13,12 +14,14 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class NoteService {
 
+    public static final String ERR_NOTE_NOT_FOUND = "존재하지 않는 노트입니다.";
+
     private final NoteRepository noteRepository;
     private final UserService userService;
 
     public Note findById(Long noteId) {
         return noteRepository.findById(noteId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 노트입니다."));
+                .orElseThrow(() -> new BusinessException(ERR_NOTE_NOT_FOUND));
     }
 
     public List<Note> findAllByUser(Long userId) {

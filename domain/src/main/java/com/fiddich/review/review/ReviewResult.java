@@ -1,18 +1,17 @@
 package com.fiddich.review.review;
 
+import com.fiddich.review.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Table(name = "review_results")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ReviewResult {
+public class ReviewResult extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,13 +25,9 @@ public class ReviewResult {
     @Column(nullable = false)
     private ReviewAnswer answer;
 
-    @Column(nullable = false)
-    private LocalDateTime reviewedAt;
-
     @Builder
     private ReviewResult(ReviewSchedule reviewSchedule, ReviewAnswer answer) {
         this.reviewSchedule = reviewSchedule;
         this.answer = answer;
-        this.reviewedAt = LocalDateTime.now();
     }
 }

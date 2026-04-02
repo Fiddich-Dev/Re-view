@@ -1,6 +1,7 @@
 package com.fiddich.review.review;
 
 import com.fiddich.review.common.BaseEntity;
+import com.fiddich.review.common.exception.BusinessException;
 import com.fiddich.review.question.Question;
 import com.fiddich.review.user.User;
 import jakarta.persistence.*;
@@ -44,6 +45,9 @@ public class ReviewSchedule extends BaseEntity {
 
     @Builder
     private ReviewSchedule(Question question, User user, int stage) {
+        if (stage < 1 || stage > REVIEW_INTERVALS.length) {
+            throw new BusinessException("유효하지 않은 복습 단계입니다.");
+        }
         this.question = question;
         this.user = user;
         this.stage = stage;

@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Entity
@@ -32,6 +33,10 @@ public class Note extends BaseEntity {
     @OneToMany(mappedBy = "note", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("displayOrder ASC")
     private List<Block> blocks = new ArrayList<>();
+
+    public List<Block> getBlocks() {
+        return Collections.unmodifiableList(blocks);
+    }
 
     @Builder
     private Note(User user, String title) {

@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Entity
@@ -36,7 +37,7 @@ public class Block extends BaseEntity {
     private String content; // 텍스트 내용 또는 이미지 URL
 
     @Enumerated(EnumType.STRING)
-    private ContentType problemType; // null 허용 (문제 미입력 시)
+    private ProblemType problemType; // null 허용 (문제 미입력 시)
 
     @Column(columnDefinition = "TEXT")
     private String problemContent; // 사용자가 직접 입력한 문제 (텍스트 또는 이미지 URL)
@@ -46,9 +47,13 @@ public class Block extends BaseEntity {
     @OneToMany(mappedBy = "block", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Question> questions = new ArrayList<>();
 
+    public List<Question> getQuestions() {
+        return Collections.unmodifiableList(questions);
+    }
+
     @Builder
     private Block(Note note, String title, ContentType contentType, String content,
-                  ContentType problemType, String problemContent, int displayOrder) {
+                  ProblemType problemType, String problemContent, int displayOrder) {
         this.note = note;
         this.title = title;
         this.contentType = contentType;
@@ -59,11 +64,12 @@ public class Block extends BaseEntity {
     }
 
     public void update(String title, ContentType contentType, String content,
-                       ContentType problemType, String problemContent) {
+                       ProblemType problemType, String problemContent, int displayOrder) {
         this.title = title;
         this.contentType = contentType;
         this.content = content;
         this.problemType = problemType;
         this.problemContent = problemContent;
+        this.displayOrder = displayOrder;
     }
 }

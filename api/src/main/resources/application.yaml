@@ -1,5 +1,3 @@
 spring:
   application:
     name: Re-view
-  profiles:
-    active: dev

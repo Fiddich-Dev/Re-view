@@ -1,5 +1,6 @@
 package com.fiddich.review.review;
 
+import com.fiddich.review.common.exception.BusinessException;
 import com.fiddich.review.question.Question;
 import com.fiddich.review.user.User;
 import com.fiddich.review.user.UserService;
@@ -14,6 +15,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ReviewService {
+
+    public static final String ERR_SCHEDULE_NOT_FOUND = "존재하지 않는 복습 일정입니다.";
 
     private final ReviewScheduleRepository reviewScheduleRepository;
     private final ReviewResultRepository reviewResultRepository;
@@ -37,7 +40,7 @@ public class ReviewService {
     @Transactional
     public void completeReview(Long scheduleId, ReviewAnswer answer) {
         ReviewSchedule schedule = reviewScheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 복습 일정입니다."));
+                .orElseThrow(() -> new BusinessException(ERR_SCHEDULE_NOT_FOUND));
 
         schedule.complete();
         reviewResultRepository.save(ReviewResult.builder()

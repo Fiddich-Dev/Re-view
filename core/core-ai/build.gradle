@@ -1,0 +1,5 @@
+dependencies {
+    implementation project(':domain')
+    // Anthropic Java SDK (Claude API) - 버전 확인 후 추가
+    // implementation 'com.anthropic:sdk:x.y.z'
+}

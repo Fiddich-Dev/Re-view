@@ -26,7 +26,7 @@ public class UserService {
     }
 
     @Transactional
-    public User register(String email, String password, String name, Platform platform) {
+    public User register(String email, String password, String name, Platform platform, AuthProvider authProvider) {
         if (userRepository.existsByEmail(email)) {
             throw new BusinessException(ERR_DUPLICATE_EMAIL);
         }
@@ -35,6 +35,19 @@ public class UserService {
                 .password(password)
                 .name(name)
                 .platform(platform)
+                .authProvider(authProvider)
                 .build());
+    }
+
+    @Transactional
+    public User findOrCreateByOAuth(AuthProvider provider, String providerId, String email, String name) {
+        return userRepository.findByProviderIdAndAuthProvider(providerId, provider)
+                .orElseGet(() -> userRepository.save(User.builder()
+                        .email(email)
+                        .name(name)
+                        .platform(Platform.APP)
+                        .authProvider(provider)
+                        .providerId(providerId)
+                        .build()));
     }
 }

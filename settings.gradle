@@ -1,1 +1,7 @@
 rootProject.name = 'Re-view'
+include 'api'
+include 'domain'
+include 'core:core-auth'
+include 'core:core-redis'
+include 'core:core-ai'
+include 'core:core-mail'

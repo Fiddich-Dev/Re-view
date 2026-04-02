@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: Re-view
+  profiles:
+    default: dev

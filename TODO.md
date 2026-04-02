@@ -41,6 +41,9 @@
 
 ## 기술 결정 필요
 
+### 사용자가 문제를 직접 입력하는 케이스
+사용자 피드백 수집 후 결정. 필요 시 `Question`에 `source(USER_INPUT | AI_GENERATED)` 필드 추가 검토.
+
 ### 복습 실패 시 stage 초기화 전략
 현재: `DIDNT_KNOW` 시 무조건 stage 1로 초기화 (처음부터 재시작)
 

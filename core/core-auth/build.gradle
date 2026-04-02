@@ -1,5 +1,6 @@
 dependencies {
     implementation project(':domain')
+    implementation project(':core:core-redis')
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
     implementation 'org.springframework:spring-tx'

@@ -1,6 +1,7 @@
 package com.fiddich.review.auth;
 
 import com.fiddich.review.common.exception.BusinessException;
+import com.fiddich.review.redis.RefreshTokenRedisRepository;
 import com.fiddich.review.user.AuthProvider;
 import com.fiddich.review.user.Platform;
 import com.fiddich.review.user.User;
@@ -18,6 +19,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
@@ -31,7 +33,7 @@ class AuthServiceTest {
     private JwtProvider jwtProvider;
 
     @Mock
-    private RefreshTokenRepository refreshTokenRepository;
+    private RefreshTokenRedisRepository refreshTokenRedisRepository;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -56,12 +58,12 @@ class AuthServiceTest {
         given(passwordEncoder.matches("rawPassword", "encoded_password")).willReturn(true);
         given(jwtProvider.generateAccessToken(any())).willReturn("access_token");
         given(jwtProvider.generateRefreshToken(any())).willReturn("refresh_token");
-        given(refreshTokenRepository.save(any())).willAnswer(inv -> inv.getArgument(0));
 
         TokenResponse response = authService.login("test@example.com", "rawPassword");
 
         assertThat(response.accessToken()).isEqualTo("access_token");
         assertThat(response.refreshToken()).isEqualTo("refresh_token");
+        verify(refreshTokenRedisRepository).save(anyString(), any());
     }
 
     @Test
@@ -95,23 +97,17 @@ class AuthServiceTest {
     @Test
     @DisplayName("유효한 리프레시 토큰으로 새 토큰을 발급한다")
     void refresh_성공() {
-        RefreshToken storedToken = RefreshToken.builder()
-                .token("valid_refresh_token")
-                .user(emailUser())
-                .build();
-
         given(jwtProvider.validateToken("valid_refresh_token")).willReturn(true);
-        given(jwtProvider.getUserId("valid_refresh_token")).willReturn(1L);
-        given(refreshTokenRepository.findByToken("valid_refresh_token")).willReturn(Optional.of(storedToken));
+        given(refreshTokenRedisRepository.findUserIdByToken("valid_refresh_token")).willReturn(Optional.of(1L));
         given(userService.findById(1L)).willReturn(emailUser());
         given(jwtProvider.generateAccessToken(any())).willReturn("new_access_token");
         given(jwtProvider.generateRefreshToken(any())).willReturn("new_refresh_token");
-        given(refreshTokenRepository.save(any())).willAnswer(inv -> inv.getArgument(0));
 
         TokenResponse response = authService.refresh("valid_refresh_token");
 
         assertThat(response.accessToken()).isEqualTo("new_access_token");
-        verify(refreshTokenRepository).deleteByToken("valid_refresh_token");
+        verify(refreshTokenRedisRepository).delete("valid_refresh_token");
+        verify(refreshTokenRedisRepository).save(anyString(), any());
     }
 
     @Test

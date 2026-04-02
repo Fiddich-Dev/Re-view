@@ -1,19 +1,16 @@
 package com.fiddich.review.auth;
 
 import com.fiddich.review.common.exception.BusinessException;
+import com.fiddich.review.redis.RefreshTokenRedisRepository;
 import com.fiddich.review.user.AuthProvider;
 import com.fiddich.review.user.User;
 import com.fiddich.review.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class AuthService {
 
     public static final String ERR_INVALID_PASSWORD = "비밀번호가 올바르지 않습니다.";
@@ -22,14 +19,13 @@ public class AuthService {
 
     private final UserService userService;
     private final JwtProvider jwtProvider;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenRedisRepository refreshTokenRedisRepository;
     private final PasswordEncoder passwordEncoder;
 
     public String encodePassword(String rawPassword) {
         return passwordEncoder.encode(rawPassword);
     }
 
-    @Transactional
     public TokenResponse login(String email, String rawPassword) {
         User user = userService.findByEmail(email);
 
@@ -43,20 +39,17 @@ public class AuthService {
         return issueTokens(user);
     }
 
-    @Transactional
     public TokenResponse refresh(String refreshToken) {
         if (!jwtProvider.validateToken(refreshToken)) {
             throw new BusinessException(ERR_INVALID_REFRESH_TOKEN);
         }
 
-        Long userId = jwtProvider.getUserId(refreshToken);
-
-        refreshTokenRepository.findByToken(refreshToken)
+        Long userId = refreshTokenRedisRepository.findUserIdByToken(refreshToken)
                 .orElseThrow(() -> new BusinessException(ERR_INVALID_REFRESH_TOKEN));
 
         User user = userService.findById(userId);
 
-        refreshTokenRepository.deleteByToken(refreshToken);
+        refreshTokenRedisRepository.delete(refreshToken);
 
         return issueTokens(user);
     }
@@ -65,11 +58,7 @@ public class AuthService {
         String accessToken = jwtProvider.generateAccessToken(user.getId());
         String refreshToken = jwtProvider.generateRefreshToken(user.getId());
 
-        refreshTokenRepository.save(RefreshToken.builder()
-                .user(user)
-                .token(refreshToken)
-                .expiresAt(LocalDateTime.now().plusDays(7))
-                .build());
+        refreshTokenRedisRepository.save(refreshToken, user.getId());
 
         return new TokenResponse(accessToken, refreshToken);
     }

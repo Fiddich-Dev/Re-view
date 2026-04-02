@@ -28,6 +28,18 @@ public class RefreshTokenRedisRepository {
         return Optional.of(Long.parseLong(value));
     }
 
+    /**
+     * 토큰을 조회하고 즉시 삭제한다 (GETDEL — 원자적 연산).
+     * refresh() 흐름에서 race condition 방지.
+     */
+    public Optional<Long> getAndDelete(String token) {
+        String value = redisTemplate.opsForValue().getAndDelete(KEY_PREFIX + token);
+        if (value == null) {
+            return Optional.empty();
+        }
+        return Optional.of(Long.parseLong(value));
+    }
+
     public void delete(String token) {
         redisTemplate.delete(KEY_PREFIX + token);
     }

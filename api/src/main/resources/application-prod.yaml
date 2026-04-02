@@ -1,3 +1,8 @@
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-expiration: 1800000    # 30분 (ms)
+  refresh-token-expiration: 604800000 # 7일 (ms)
+
 spring:
   datasource:
     url: ${PROD_DB_URL}
@@ -8,3 +13,7 @@ spring:
     hibernate:
       ddl-auto: validate
     show-sql: false
+  data:
+    redis:
+      host: ${PROD_REDIS_HOST}
+      port: ${PROD_REDIS_PORT:6379}

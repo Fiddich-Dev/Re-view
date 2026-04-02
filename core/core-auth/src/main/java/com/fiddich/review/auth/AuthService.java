@@ -44,14 +44,17 @@ public class AuthService {
             throw new BusinessException(ERR_INVALID_REFRESH_TOKEN);
         }
 
-        Long userId = refreshTokenRedisRepository.findUserIdByToken(refreshToken)
+        // getAndDelete: 조회와 삭제를 원자적으로 처리 (race condition 방지)
+        Long userId = refreshTokenRedisRepository.getAndDelete(refreshToken)
                 .orElseThrow(() -> new BusinessException(ERR_INVALID_REFRESH_TOKEN));
 
         User user = userService.findById(userId);
 
-        refreshTokenRedisRepository.delete(refreshToken);
-
         return issueTokens(user);
+    }
+
+    public void logout(String refreshToken) {
+        refreshTokenRedisRepository.delete(refreshToken);
     }
 
     private TokenResponse issueTokens(User user) {

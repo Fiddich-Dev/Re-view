@@ -98,7 +98,7 @@ class AuthServiceTest {
     @DisplayName("유효한 리프레시 토큰으로 새 토큰을 발급한다")
     void refresh_성공() {
         given(jwtProvider.validateToken("valid_refresh_token")).willReturn(true);
-        given(refreshTokenRedisRepository.findUserIdByToken("valid_refresh_token")).willReturn(Optional.of(1L));
+        given(refreshTokenRedisRepository.getAndDelete("valid_refresh_token")).willReturn(Optional.of(1L));
         given(userService.findById(1L)).willReturn(emailUser());
         given(jwtProvider.generateAccessToken(any())).willReturn("new_access_token");
         given(jwtProvider.generateRefreshToken(any())).willReturn("new_refresh_token");
@@ -106,7 +106,6 @@ class AuthServiceTest {
         TokenResponse response = authService.refresh("valid_refresh_token");
 
         assertThat(response.accessToken()).isEqualTo("new_access_token");
-        verify(refreshTokenRedisRepository).delete("valid_refresh_token");
         verify(refreshTokenRedisRepository).save(anyString(), any());
     }
 

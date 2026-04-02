@@ -23,7 +23,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         String token = resolveToken(request);
 
-        if (StringUtils.hasText(token) && jwtProvider.validateToken(token)) {
+        if (StringUtils.hasText(token)) {
+            if (!jwtProvider.validateToken(token)) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "유효하지 않은 토큰입니다.");
+                return;
+            }
             Long userId = jwtProvider.getUserId(token);
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(userId, null, List.of());

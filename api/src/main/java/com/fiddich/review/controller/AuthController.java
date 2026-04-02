@@ -6,6 +6,7 @@ import com.fiddich.review.common.response.ApiResponse;
 import com.fiddich.review.dto.request.LoginRequest;
 import com.fiddich.review.dto.request.RegisterRequest;
 import com.fiddich.review.user.AuthProvider;
+import com.fiddich.review.user.Platform;
 import com.fiddich.review.user.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<Void>> register(@Valid @RequestBody RegisterRequest request) {
         String encodedPassword = authService.encodePassword(request.password());
-        userService.register(request.email(), encodedPassword, request.name(), request.platform(), AuthProvider.EMAIL);
+        userService.register(request.email(), encodedPassword, request.name(), Platform.WEB, AuthProvider.EMAIL);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok());
     }
 
@@ -38,5 +39,11 @@ public class AuthController {
     public ResponseEntity<ApiResponse<TokenResponse>> refresh(@RequestHeader("Refresh-Token") String refreshToken) {
         TokenResponse tokens = authService.refresh(refreshToken);
         return ResponseEntity.ok(ApiResponse.ok(tokens));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(@RequestHeader("Refresh-Token") String refreshToken) {
+        authService.logout(refreshToken);
+        return ResponseEntity.ok(ApiResponse.ok());
     }
 }
